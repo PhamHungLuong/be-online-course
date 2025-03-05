@@ -1,15 +1,13 @@
 package be_course.be_online_course.modules.auth;
 
-import be_course.be_online_course.DTO.ApiResponse;
-import be_course.be_online_course.DTO.AuthResponse;
-import be_course.be_online_course.DTO.LoginDto;
-import be_course.be_online_course.DTO.SignUpDto;
+import be_course.be_online_course.DTO.*;
 import be_course.be_online_course.exception.UserExceptions;
 import be_course.be_online_course.modules.role.RoleRepository;
 import be_course.be_online_course.modules.role.Roles;
 import be_course.be_online_course.modules.user.User;
 import be_course.be_online_course.modules.user.UserRepository;
 import be_course.be_online_course.utils.JwtTokenProvider;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.Collections;
 
 @RestController
@@ -44,7 +43,7 @@ public class AuthController {
     private JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody LoginDto loginDto){
+    public ResponseEntity<AuthResponse> authenticateUser(@Valid @RequestBody LoginDto loginDto){
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginDto.getUsernameOrEmail(), loginDto.getPassword()));
 
@@ -56,6 +55,24 @@ public class AuthController {
 
         AuthResponse authResponse = new AuthResponse(token, userDetails.getUsername());
         return ResponseEntity.ok(authResponse);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPasswordUser(@RequestBody ResetPasswordDTO resetPasswordDTO, Principal principal){
+
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UserExceptions.UserNotFoundException("User not found"));
+
+        // Checking old password is invalid
+        if (!passwordEncoder.matches(resetPasswordDTO.getOldPassword(), user.getPassword())) {
+            throw new UserExceptions.CheckValidPassword("Old password does not match");
+        }
+
+        // Save new password
+        user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
+        userRepository.save(user);
+
+        return ResponseEntity.ok(ApiResponse.success("Password reset successfully"));
     }
 
     @PostMapping("/signup")

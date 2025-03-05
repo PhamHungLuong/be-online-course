@@ -14,4 +14,10 @@ public class UserExceptions {
             super(message, HttpStatus.CONFLICT);
         }
     }
+
+    public static class CheckValidPassword extends BaseException {
+        public CheckValidPassword(String message) {
+            super(message, HttpStatus.UNAUTHORIZED);
+        }
+    }
 }
