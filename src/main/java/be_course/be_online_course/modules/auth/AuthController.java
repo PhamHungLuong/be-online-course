@@ -43,7 +43,7 @@ public class AuthController {
     private JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> authenticateUser(@Valid @RequestBody LoginDto loginDto){
+    public ResponseEntity<AuthResponse> authenticateUser(@Valid @RequestBody LoginDTO loginDto){
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginDto.getUsernameOrEmail(), loginDto.getPassword()));
 
@@ -51,9 +51,14 @@ public class AuthController {
 
         org.springframework.security.core.userdetails.User userDetails =
                 (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-        String token = jwtTokenProvider.generateToken(userDetails.getUsername());
+
+        User user = userRepository.findByUsernameOrEmail(userDetails.getUsername(), userDetails.getUsername())
+                .orElseThrow(() -> new UserExceptions.UserNotFoundException("User not found"));
+
+        String token = jwtTokenProvider.generateToken(userDetails.getUsername(),user);
 
         AuthResponse authResponse = new AuthResponse(token, userDetails.getUsername());
+
         return ResponseEntity.ok(authResponse);
     }
 
@@ -72,7 +77,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
         userRepository.save(user);
 
-        return ResponseEntity.ok(ApiResponse.success("Password reset successfully"));
+        return ResponseEntity.ok(ApiResponse.successMessage("Password reset successfully"));
     }
 
     @PostMapping("/signup")
@@ -98,6 +103,6 @@ public class AuthController {
         user.setRoles(Collections.singleton(role));
         userRepository.save(user);
 
-        return ResponseEntity.ok(ApiResponse.success("User registered successfully!"));
+        return ResponseEntity.ok(ApiResponse.successMessage("User registered successfully!"));
     }
 }

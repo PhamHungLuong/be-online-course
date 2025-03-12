@@ -1,10 +1,12 @@
 package be_course.be_online_course.modules.user;
 
+import be_course.be_online_course.modules.Course.Course;
 import be_course.be_online_course.modules.role.Roles;
 import lombok.Data;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -30,4 +32,7 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     @JsonManagedReference
     private Set<Roles> roles;
+
+    @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Course> courses;
 }

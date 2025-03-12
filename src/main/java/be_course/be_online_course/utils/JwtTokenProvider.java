@@ -1,5 +1,6 @@
 package be_course.be_online_course.utils;
 
+import be_course.be_online_course.modules.user.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
@@ -16,9 +17,12 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, User user) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("email", user.getEmail())
+                .claim("roles", user.getRoles())
+                .claim("id", user.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)

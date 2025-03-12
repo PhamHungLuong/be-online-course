@@ -19,15 +19,15 @@ public class ApiResponse<T> {
         this.data = null;
     }
 
-    public static <T> ApiResponse<T> success(T data, String message) {
-        return new ApiResponse<>(HttpStatus.OK.value(), message, data);
-    }
-
-    public static ApiResponse<String> success(String message) {
+    public static ApiResponse<String> successMessage(String message) {
         return new ApiResponse<>(HttpStatus.OK.value(), message);
     }
 
     public static ApiResponse<String> error(HttpStatus status, String message) {
         return new ApiResponse<>(status.value(), message);
+    }
+
+    public static <T> ApiResponse<T> success(T data, String message) {
+        return new ApiResponse<>(HttpStatus.OK.value(), message, data);
     }
 }

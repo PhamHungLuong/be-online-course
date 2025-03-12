@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class LoginDto {
+public class LoginDTO {
     @NotBlank(message = "Username or email cannot be blank")
     private String usernameOrEmail;
 
